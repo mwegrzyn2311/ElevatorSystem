@@ -13,4 +13,13 @@ public class Person {
         this.dir = dir;
         this.to = to;
     }
+
+    public static Person createRandomDestPerson(int from, ElevatorDirection dir, int minFloor, int maxFloor) {
+        int dest;
+        int floorCount = maxFloor - minFloor + 1;
+        do {
+            dest = (int)(Math.random()*floorCount) + minFloor;
+        } while(dest == from);
+        return new Person(from, dir, dest);
+    }
 }

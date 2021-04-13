@@ -9,7 +9,7 @@ import java.io.IOException;
 
 public class SimulationCanvas extends Canvas {
     private final int elCount;
-    private static final int vGap = 5;
+    private static final int vGap = 6;
     private static final int hGap = 4;
     private static final int lobbyWidth = 128;
     private static final int elWidth = 64;

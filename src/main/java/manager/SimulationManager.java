@@ -26,6 +26,11 @@ public class SimulationManager {
         this.canvas = canvas;
     }
 
+    public void spawnRandomPerson(int from, ElevatorDirection dir) {
+        elSystem.pickup(Person.createRandomDestPerson(from, dir, elSystem.minFloor, elSystem.maxFloor));
+        canvas.repaint();
+    }
+
     public void nextStep() {
         if(step < people.size())
             people.get(step++).forEach(elSystem::pickup);

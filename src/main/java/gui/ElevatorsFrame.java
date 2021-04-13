@@ -20,7 +20,9 @@ public class ElevatorsFrame extends JFrame {
         SimulationCanvas canvas = new SimulationCanvas(elSystem);
         this.add(canvas, BorderLayout.CENTER);
 
-        this.add(new ButtonPanel(new SimulationManager(elSystem, canvas)), BorderLayout.SOUTH);
+        SimulationManager simManager = new SimulationManager(elSystem, canvas);
+        this.add(new ButtonPanel(simManager), BorderLayout.PAGE_END);
+        this.add(new CallElevatorButtonsPanel(simManager, minFloor, maxFloor), BorderLayout.LINE_START);
 
         this.pack();
         this.setResizable(false);
