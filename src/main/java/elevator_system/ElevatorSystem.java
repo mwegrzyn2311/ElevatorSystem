@@ -1,5 +1,7 @@
 package elevator_system;
 
+import users.Person;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -15,6 +17,8 @@ public class ElevatorSystem {
 
     //private SortedSet<Elevator> elevators = new TreeSet<>(Comparator.comparingInt(e -> e.currentFloor));
     public List<Elevator> elevators;
+
+    public List<List<Person>> waitingPeople;
     //private List<List<>>
 
     // Regarding minFloor/maxFloor - here I assumed that there is floor 0 (even though there is no such floor in US). It could be a way to improve this app - allow elevator type choice
@@ -25,6 +29,10 @@ public class ElevatorSystem {
         this.elevators = new ArrayList<>(elevatorsCount);
         for(int i = 0; i < elevatorsCount; ++i) {
             elevators.add(new Elevator(i, minFloor, maxFloor));
+        }
+        waitingPeople = new ArrayList<>(maxFloor - minFloor + 1);
+        for(int i = 0; i < maxFloor - minFloor + 1; ++i) {
+            waitingPeople.add(i, new LinkedList<>());
         }
     }
 
@@ -41,6 +49,12 @@ public class ElevatorSystem {
 
         bestElevator.pickup(floor);
         return bestElevator;
+    }
+    public void pickup(Person person) {
+        Elevator bestElevator = elevators.stream().min(Comparator.comparingInt(e -> getElevatorMetric(e, person.from, person.dir))).get();
+
+        bestElevator.pickup(person.from);
+        waitingPeople.get(person.from - minFloor).add(person);
     }
     public void pickupAndChooseDestination(int floor, ElevatorDirection dir, int destination) {
         Elevator el = pickup(floor, dir);
@@ -74,9 +88,24 @@ public class ElevatorSystem {
         // Move down or open (For now I assume constant time for people to get out (although very unrealistic))
         for(Elevator elevator : elevators) {
             // If elevator should open there, it opens
-            if(elevator.floorButtons[elevator.currentFloor]) {
-                // TODO: Simulate people getting out?
-                elevator.floorButtons[elevator.currentFloor] = false;
+            if(elevator.floorButtons[elevator.currentFloor - minFloor]) {
+                if (elevator.currentFloor == elevator.lastFloorInDir) {
+                    elevator.dir = ElevatorDirection.IDLE;
+                }
+                // people getting out
+                elevator.simGettingOut();
+                // people getting in
+
+                Iterator<Person> it = waitingPeople.get(elevator.currentFloor - minFloor).listIterator();
+                while(it.hasNext()) {
+                    Person person = it.next();
+                    if(person.dir == elevator.dir || elevator.dir == ElevatorDirection.IDLE) {
+                        elevator.getIn(person);
+                        it.remove();
+                    }
+                }
+
+                elevator.floorButtons[elevator.currentFloor - minFloor] = false;
             } else {
                 switch (elevator.dir) {
                     case UP:

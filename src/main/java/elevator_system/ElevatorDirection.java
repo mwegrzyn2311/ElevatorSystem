@@ -26,4 +26,18 @@ public enum ElevatorDirection {
             return IDLE;
         }
     }
+
+    @Override
+    public String toString() {
+        switch(this) {
+            case DOWN:
+                return "DOWN";
+            case UP:
+                return "UP";
+            case IDLE:
+                return "IDLE";
+            default:
+                return "UnhandledDir";
+        }
+    }
 }

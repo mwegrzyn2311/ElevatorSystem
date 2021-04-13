@@ -3,6 +3,7 @@ package manager;
 import elevator_system.ElevatorDirection;
 import elevator_system.ElevatorSystem;
 import gui.SimulationCanvas;
+import users.Person;
 
 import java.util.*;
 
@@ -13,9 +14,9 @@ public class SimulationManager {
 
     private int step = 0;
 
-    private final List<List<SimStep>> simSteps = Arrays.asList(
-            Arrays.asList(new SimStep(2, ElevatorDirection.DOWN, 1), new SimStep(2, ElevatorDirection.UP, 3)),
-            Arrays.asList(new SimStep(0, ElevatorDirection.UP, 4)),
+    private final List<List<Person>> people = Arrays.asList(
+            Arrays.asList(new Person(2, ElevatorDirection.DOWN, -1), new Person(2, ElevatorDirection.UP, 4)),
+            Arrays.asList(new Person(0, ElevatorDirection.UP, 6)),
             Collections.emptyList(),
             Collections.emptyList()
     );
@@ -26,9 +27,13 @@ public class SimulationManager {
     }
 
     public void nextStep() {
-        if(step < simSteps.size())
-            simSteps.get(step++).forEach(simStep -> elSystem.pickupAndChooseDestination(simStep.from, simStep.dir, simStep.to));
+        if(step < people.size())
+            people.get(step++).forEach(elSystem::pickup);
         elSystem.step();
         canvas.repaint();
+    }
+
+    public void quickRestart() {
+        step = 0;
     }
 }
