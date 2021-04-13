@@ -32,8 +32,8 @@ public class SimulationManager {
     }
 
     public void nextStep() {
-        if(step < people.size())
-            people.get(step++).forEach(elSystem::pickup);
+        /*if(step < people.size())
+            people.get(step++).forEach(elSystem::pickup);*/
         elSystem.step();
         canvas.repaint();
     }

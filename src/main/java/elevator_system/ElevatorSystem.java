@@ -36,39 +36,29 @@ public class ElevatorSystem {
         }
     }
 
-    public Elevator pickup(int floor, ElevatorDirection dir) {
+    public void pickup(Person person) {
+        // I pick the elevator with the best (the lowest metric value)
+        Elevator bestElevator = elevators.stream().min(Comparator.comparingInt(e -> getElevatorMetric(e, person.from, person.dir))).get();
+
+        bestElevator.pickup(person.from);
+        waitingPeople.get(person.from - minFloor).add(person);
+    }
+
+    private int getElevatorMetric(Elevator elevator, int floor, ElevatorDirection dir) {
         // Best elevators are:
         // 1) Already moving to the same floor in the same direction (but that would take more time to count (iterating over array inside elevator))
         // 2) Idle on the same floor
         // TODO: Reconsider this stuff
         // 3) Moving in the same direction with and being able
         // 4) Moving in the same direction with
-
-        // Find the most suitable elevator
-        Elevator bestElevator = elevators.stream().min(Comparator.comparingInt(e -> getElevatorMetric(e, floor, dir))).get();
-
-        bestElevator.pickup(floor);
-        return bestElevator;
-    }
-    public void pickup(Person person) {
-        Elevator bestElevator = elevators.stream().min(Comparator.comparingInt(e -> getElevatorMetric(e, person.from, person.dir))).get();
-
-        bestElevator.pickup(person.from);
-        waitingPeople.get(person.from - minFloor).add(person);
-    }
-    public void pickupAndChooseDestination(int floor, ElevatorDirection dir, int destination) {
-        Elevator el = pickup(floor, dir);
-        el.pickFloorWithButton(destination);
-    }
-
-    private int getElevatorMetric(Elevator elevator, int floor, ElevatorDirection dir) {
         int metric;
         if(elevator.dir == ElevatorDirection.IDLE) {
             metric = Math.abs(elevator.currentFloor - floor);
         } // I'm gonna assume that elevator needs at least one floor to slow down, so if one is on the same floor the person is but is moving, it will not be picked up primarily
-        else if(elevator.dir == dir && (elevator.currentFloor - floor) * elevator.dir.dirVal() > 0 ) {
+        else if(elevator.dir == dir && (elevator.currentFloor - floor) * elevator.dir.dirVal() < 0 ) {
             // It could also calculate other floors that the elevator has to stop for and what not but I the code would look awful
-            metric = Math.abs(elevator.currentFloor - floor);
+            // I assume that elevator going in the same direction is better than the one that is IDLE
+            metric = Math.abs(elevator.currentFloor - floor) - 1;
         } else {
             // we have to keep in mind that elevator route can get longer so it is twice the distance to that direction's end
             if(elevator.dir == ElevatorDirection.DOWN) {

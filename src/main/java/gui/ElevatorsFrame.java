@@ -8,13 +8,10 @@ import java.awt.*;
 
 public class ElevatorsFrame extends JFrame {
 
-    public ElevatorsFrame() {
+    public ElevatorsFrame(int elevatorsCount, int minFloor, int maxFloor) {
         super("Elevators");
         this.setLayout(new BorderLayout());
 
-        int elevatorsCount = 4;
-        int minFloor = -2;
-        int maxFloor = 8;
 
         ElevatorSystem elSystem = new ElevatorSystem(elevatorsCount, minFloor, maxFloor);
         SimulationCanvas canvas = new SimulationCanvas(elSystem);
