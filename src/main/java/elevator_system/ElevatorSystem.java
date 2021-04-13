@@ -9,15 +9,17 @@ import java.util.stream.Collectors;
  */
 
 public class ElevatorSystem {
-    private int minFloor;
-    private int maxFloor;
+    public final int minFloor;
+    public final int maxFloor;
+    public final int elevatorsCount;
 
     //private SortedSet<Elevator> elevators = new TreeSet<>(Comparator.comparingInt(e -> e.currentFloor));
-    private List<Elevator> elevators;
+    public List<Elevator> elevators;
     //private List<List<>>
 
     // Regarding minFloor/maxFloor - here I assumed that there is floor 0 (even though there is no such floor in US). It could be a way to improve this app - allow elevator type choice
     public ElevatorSystem(int elevatorsCount, int minFloor, int maxFloor) {
+        this.elevatorsCount = elevatorsCount;
         this.minFloor = minFloor;
         this.maxFloor = maxFloor;
         this.elevators = new ArrayList<>(elevatorsCount);
@@ -26,7 +28,7 @@ public class ElevatorSystem {
         }
     }
 
-    public void pickup(int floor, ElevatorDirection dir) {
+    public Elevator pickup(int floor, ElevatorDirection dir) {
         // Best elevators are:
         // 1) Already moving to the same floor in the same direction (but that would take more time to count (iterating over array inside elevator))
         // 2) Idle on the same floor
@@ -38,7 +40,13 @@ public class ElevatorSystem {
         Elevator bestElevator = elevators.stream().min(Comparator.comparingInt(e -> getElevatorMetric(e, floor, dir))).get();
 
         bestElevator.pickup(floor);
+        return bestElevator;
     }
+    public void pickupAndChooseDestination(int floor, ElevatorDirection dir, int destination) {
+        Elevator el = pickup(floor, dir);
+        el.pickFloorWithButton(destination);
+    }
+
     private int getElevatorMetric(Elevator elevator, int floor, ElevatorDirection dir) {
         int metric;
         if(elevator.dir == ElevatorDirection.IDLE) {

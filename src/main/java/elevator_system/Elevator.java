@@ -51,6 +51,11 @@ public class Elevator {
                 break;
         }
     }
+    public void pickFloorWithButton(int to) {
+        floorButtons[to] = true;
+        if((to - lastFloorInDir) * dir.dirVal() > 0)
+            lastFloorInDir = to;
+    }
 
     /** Changes dir if needed, otherwise elevator goes to IDLE state */
     public void changeDir() {
