@@ -122,13 +122,19 @@ public class ElevatorSystem {
         }
         // If job is done, change dir to the other one or to idle and update lastFloorInDir
         for(Elevator elevator : elevators) {
-            if (elevator.currentFloor == elevator.lastFloorInDir) {
+            if (elevator.currentFloor == elevator.lastFloorInDir || (elevator.peopleInside.size() != 0 && elevator.dir == ElevatorDirection.IDLE)) {
+                elevator.dir = ElevatorDirection.IDLE;
                 elevator.changeDir();
             }
         }
     }
     public List<ElevatorState> status() {
         return elevators.stream().map(e -> new ElevatorState(e.id, e.currentFloor, e.lastFloorInDir)).collect(Collectors.toList());
+    }
+    public void printSystemStatus() {
+        System.out.println("===Elevator System Info===");
+        elevators.forEach(Elevator::printInfo);
+        System.out.println("==========================");
     }
 
 }

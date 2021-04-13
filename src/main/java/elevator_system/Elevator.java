@@ -14,7 +14,6 @@ public class Elevator {
     public int lastFloorInDir;
 
     public boolean[] floorButtons;
-    public List<Integer> floorsToVisitAfterDirChange = new LinkedList<>();
     public List<Person> peopleInside = new LinkedList<>();
 
     public Elevator(int id, int minFloor, int maxFloor) {
@@ -29,69 +28,80 @@ public class Elevator {
     }
 
     public void pickup(int floor) {
-        switch(dir) {
+        switch (dir) {
             case IDLE:
                 this.dir = ElevatorDirection.fromFloorDiff(currentFloor - floor);
                 floorButtons[floor - minFloor] = true;
                 lastFloorInDir = floor;
                 break;
             case DOWN:
-                if(floor >= currentFloor) {
-                    floorsToVisitAfterDirChange.add(floor);
-                } else {
-                    floorButtons[floor - minFloor] = true;
-                    if(floor < lastFloorInDir)
-                        lastFloorInDir = floor;
-                }
+                floorButtons[floor - minFloor] = true;
+                if (floor < lastFloorInDir)
+                    lastFloorInDir = floor;
+                //}
                 break;
             case UP:
-                if(floor <= currentFloor) {
-                    floorsToVisitAfterDirChange.add(floor);
-                } else {
-                    floorButtons[floor - minFloor] = true;
-                    if(floor > lastFloorInDir)
-                        lastFloorInDir = floor;
-                }
-                break;
-        }
-    }
-    public void pickFloorWithButton(int to) {
-        floorButtons[to - minFloor] = true;
-        switch(dir) {
-            case IDLE:
-                dir = ElevatorDirection.fromFloorDiff(currentFloor - to);
-                lastFloorInDir = to;
-                break;
-            case DOWN:
-            case UP:
-                if((to - lastFloorInDir) * dir.dirVal() > 0 && currentFloor != lastFloorInDir)
-                    lastFloorInDir = to;
+                floorButtons[floor - minFloor] = true;
+                if (floor > lastFloorInDir)
+                    lastFloorInDir = floor;
                 break;
         }
     }
 
-    /** Changes dir if needed, otherwise elevator goes to IDLE state */
+    public void pickFloorWithButton(int to) {
+        floorButtons[to - minFloor] = true;
+        switch (dir) {
+            case IDLE:
+                break;
+            case DOWN:
+            case UP:
+                if ((to - lastFloorInDir) * dir.dirVal() > 0) {
+                    lastFloorInDir = to;
+                }
+                break;
+        }
+    }
+
+    /**
+     * Changes dir if needed, otherwise elevator goes to IDLE state
+     */
     public void changeDir() {
-        floorsToVisitAfterDirChange.forEach(floor -> floorButtons[floor - minFloor] = true);
-        floorsToVisitAfterDirChange.clear();
+        //floorsToVisitAfterDirChange.forEach(floor -> floorButtons[floor - minFloor] = true);
+        //floorsToVisitAfterDirChange.clear();
 
         switch (dir) {
             case UP:
                 dir = ElevatorDirection.IDLE;
-                for(int i = currentFloor - minFloor; i >= 0; --i) {
-                    if(floorButtons[i]) {
+                for (int i = currentFloor - minFloor; i >= 0; --i) {
+                    if (floorButtons[i]) {
                         lastFloorInDir = i + minFloor;
                         dir = ElevatorDirection.DOWN;
                     }
                 }
+                break;
             case DOWN:
                 dir = ElevatorDirection.IDLE;
-                for(int i = currentFloor - minFloor; i <= maxFloor - minFloor; ++i) {
-                    if(floorButtons[i]) {
+                for (int i = currentFloor - minFloor; i <= maxFloor - minFloor; ++i) {
+                    if (floorButtons[i]) {
                         lastFloorInDir = i + minFloor;
                         dir = ElevatorDirection.UP;
                     }
                 }
+                break;
+            case IDLE:
+                for (int i = currentFloor - minFloor; i <= maxFloor - minFloor; ++i) {
+                    if (floorButtons[i]) {
+                        lastFloorInDir = i + minFloor;
+                        dir = ElevatorDirection.UP;
+                    }
+                }
+                for (int i = currentFloor - minFloor; i >= 0; --i) {
+                    if (floorButtons[i]) {
+                        lastFloorInDir = i + minFloor;
+                        dir = ElevatorDirection.DOWN;
+                    }
+                }
+                break;
         }
     }
 
@@ -102,7 +112,18 @@ public class Elevator {
     public void getIn(Person person) {
         System.out.println("Getting in on " + currentFloor + " floor, wanting to go to " + person.to + " | ");
         peopleInside.add(person);
+        if (dir == ElevatorDirection.IDLE)
+            dir = person.dir;
         pickFloorWithButton(person.to);
         System.out.println(" Direction is now " + dir);
+    }
+
+    public void printInfo() {
+        System.out.print("El[" + id + "] is at [" + currentFloor + "] | Dir[" + dir + "] | Floor buttons active are ");
+        for (int i = 0; i < floorButtons.length; ++i) {
+            if (floorButtons[i])
+                System.out.print((i + minFloor) + ", ");
+        }
+        System.out.println();
     }
 }

@@ -41,4 +41,8 @@ public class SimulationManager {
     public void quickRestart() {
         step = 0;
     }
+
+    public void printInfo() {
+        elSystem.printSystemStatus();
+    }
 }
