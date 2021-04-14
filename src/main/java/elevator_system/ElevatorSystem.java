@@ -40,40 +40,46 @@ public class ElevatorSystem {
         // I pick the elevator with the best (the lowest metric value)
         Elevator bestElevator = elevators.stream().min(Comparator.comparingInt(e -> getElevatorMetric(e, person.from, person.dir))).get();
 
-        bestElevator.pickup(person.from);
+        bestElevator.pickup(person.from, person.dir);
         waitingPeople.get(person.from - minFloor).add(person);
     }
 
     private int getElevatorMetric(Elevator elevator, int floor, ElevatorDirection dir) {
-        // Best elevators are:
-        // 1) Already moving to the same floor in the same direction (but that would take more time to count (iterating over array inside elevator))
-        // 2) Idle on the same floor
-        // TODO: Reconsider this stuff
-        // 3) Moving in the same direction with and being able
-        // 4) Moving in the same direction with
         int metric;
-        if(elevator.dir == ElevatorDirection.IDLE) {
-            metric = Math.abs(elevator.currentFloor - floor);
-        }// I'm gonna assume that elevator needs at least one floor to slow down, so if one is on the same floor the person is but is moving, it will not be picked up primarily
-        else if(elevator.dir == dir && (elevator.currentFloor - floor) * elevator.dir.dirVal() < 0 ) {
-            // It could also calculate other floors that the elevator has to stop for and what not but I the code would look awful
-            // I assume that elevator going in the same direction is better than the one that is IDLE
+        // Best elevators are:
+        if((elevator.dir == dir || elevator.willChangeDir) && elevator.floorButtons[floor - minFloor]) {
+            // 1) Already moving to the same floor in the same direction
+            metric = -2;
+        }
+        else if(elevator.dir == dir && (elevator.currentFloor - floor) * elevator.dir.dirVal() < 0 && !elevator.willChangeDir) {
+            // 2) Moving in the same direction (second condition is because elevator needs time to slow down)
             metric = Math.abs(elevator.currentFloor - floor) - 1;
-        } else {
+        } else if(elevator.dir == ElevatorDirection.IDLE) {
+            // 3) Idle on the same floor
+            metric = Math.abs(elevator.currentFloor - floor);
+        } else if(!elevator.willChangeDir){
+            // 4) Going in another direction (Or called when already on the floor but moving so needing time to slow down)
             // we have to keep in mind that elevator route can get longer so it is twice the distance to that direction's end
-            if(elevator.dir == ElevatorDirection.DOWN) {
-                metric = 2 * (elevator.currentFloor - minFloor);
+            if((floor - elevator.lastFloorInDir) * elevator.dir.dirVal() > 0) {
+                metric = Math.abs(elevator.currentFloor - floor);
             } else {
-                metric = 2 * (maxFloor - elevator.currentFloor);
+                if (elevator.dir == ElevatorDirection.DOWN) {
+                    metric = 2 * (elevator.currentFloor - minFloor) + (floor - elevator.currentFloor);
+                } else {
+                    metric = 2 * (maxFloor - elevator.currentFloor) + (elevator.currentFloor - floor);
+                }
+            }
+        } else {
+            // 5) Elevator will change dirs twice so:
+            if(elevator.dir == ElevatorDirection.DOWN) {
+                metric = 2 * (elevator.currentFloor - minFloor) + (floor - elevator.currentFloor);
+            } else {
+                metric = 2 * (maxFloor - elevator.currentFloor) + (elevator.currentFloor - floor);
             }
         }
         return metric;
     }
 
-    // TODO: Consider getting rid of it as this implementation doesn't need it and I don't feel like we need teleportating elevators
-    public void update() {
-
-    }
     public void step() {
         // Move down or open (For now I assume constant time for people to get out (although very unrealistic))
         for(Elevator elevator : elevators) {
@@ -82,10 +88,11 @@ public class ElevatorSystem {
                 if (elevator.currentFloor == elevator.lastFloorInDir) {
                     elevator.dir = ElevatorDirection.IDLE;
                 }
+                elevator.floorButtons[elevator.currentFloor - minFloor] = false;
+
                 // people getting out
                 elevator.simGettingOut();
                 // people getting in
-
                 Iterator<Person> it = waitingPeople.get(elevator.currentFloor - minFloor).listIterator();
                 while(it.hasNext()) {
                     Person person = it.next();
@@ -94,8 +101,6 @@ public class ElevatorSystem {
                         it.remove();
                     }
                 }
-
-                elevator.floorButtons[elevator.currentFloor - minFloor] = false;
             } else {
                 switch (elevator.dir) {
                     case UP:
@@ -110,6 +115,7 @@ public class ElevatorSystem {
                 }
             }
         }
+
         // If job is done, change dir to the other one or to idle and update lastFloorInDir
         for(Elevator elevator : elevators) {
             if (elevator.currentFloor == elevator.lastFloorInDir || (elevator.peopleInside.size() != 0 && elevator.dir == ElevatorDirection.IDLE)) {
@@ -122,8 +128,13 @@ public class ElevatorSystem {
         return elevators.stream().map(e -> new ElevatorState(e.id, e.currentFloor, e.lastFloorInDir)).collect(Collectors.toList());
     }
     public void printSystemStatus() {
-        System.out.println("===Elevator System Info===");
+        System.out.println("===Elevators Info===");
         elevators.forEach(Elevator::printInfo);
+        System.out.println("===Waiting People Info===");
+        for(int i = waitingPeople.size() - 1; i >= 0; --i) {
+            System.out.println("--Floor[" + (i + minFloor) + "]--");
+            waitingPeople.get(i).forEach(System.out::println);
+        }
         System.out.println("==========================");
     }
 

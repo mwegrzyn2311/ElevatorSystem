@@ -23,4 +23,9 @@ public class Person {
         }
         return new Person(from, dir, dest);
     }
+
+    @Override
+    public String toString() {
+        return "From[" + from + "] To[" + to + "] Dir[" + dir + "]";
+    }
 }

@@ -12,6 +12,8 @@ public class Elevator {
     public int currentFloor;
     public ElevatorDirection dir = ElevatorDirection.IDLE;
     public int lastFloorInDir;
+    public List<Integer> visitAfterDirChange = new LinkedList<>();
+    public boolean willChangeDir = false;
 
     public boolean[] floorButtons;
     public List<Person> peopleInside = new LinkedList<>();
@@ -27,8 +29,12 @@ public class Elevator {
 
     }
 
-    public void pickup(int floor) {
-        switch (dir) {
+    public void pickup(int floor, ElevatorDirection personDir) {
+        // Last condition is to eliminate case where el from 0 goes to 5 to pickup person wanting to go down but is not assigned to anything else
+        if((this.dir != ElevatorDirection.IDLE && this.dir != personDir && (lastFloorInDir - floor) * dir.dirVal() > 0) || (willChangeDir && (lastFloorInDir - floor) * dir.dirVal() < 0)) {
+            visitAfterDirChange.add(floor);
+        }
+        switch (this.dir) {
             case IDLE:
                 this.dir = ElevatorDirection.fromFloorDiff(currentFloor - floor);
                 floorButtons[floor - minFloor] = true;
@@ -45,6 +51,9 @@ public class Elevator {
                 if (floor > lastFloorInDir)
                     lastFloorInDir = floor;
                 break;
+        }
+        if(this.dir != personDir) {
+            willChangeDir = true;
         }
     }
 
@@ -66,8 +75,11 @@ public class Elevator {
      * Changes dir if needed, otherwise elevator goes to IDLE state
      */
     public void changeDir() {
-        //floorsToVisitAfterDirChange.forEach(floor -> floorButtons[floor - minFloor] = true);
-        //floorsToVisitAfterDirChange.clear();
+        if(!visitAfterDirChange.isEmpty()) {
+            System.out.println("CHANGING DIR TO PICKUP someone left behind");
+        }
+        visitAfterDirChange.forEach(floor -> floorButtons[floor - minFloor] = true);
+        visitAfterDirChange.clear();
 
         switch (dir) {
             case UP:
@@ -103,6 +115,28 @@ public class Elevator {
                 }
                 break;
         }
+        willChangeDir = false;
+        switch (dir) {
+            case UP:
+                for (int i = currentFloor - minFloor; i <= maxFloor - minFloor; ++i) {
+                    if (floorButtons[i]) {
+                        willChangeDir = true;
+                        break;
+                    }
+                }
+                break;
+            case DOWN:
+                for (int i = currentFloor - minFloor; i >= 0; --i) {
+                    if (floorButtons[i]) {
+                        willChangeDir = true;
+                        break;
+                    }
+                }
+                break;
+            // unreachable
+            case IDLE:
+                break;
+        }
     }
 
     public void simGettingOut() {
@@ -110,7 +144,7 @@ public class Elevator {
     }
 
     public void getIn(Person person) {
-        System.out.println("Getting in on " + currentFloor + " floor, wanting to go to " + person.to + " | ");
+        System.out.print("Getting in on " + currentFloor + " floor, wanting to go to " + person.to + " | ");
         peopleInside.add(person);
         if (dir == ElevatorDirection.IDLE)
             dir = person.dir;
