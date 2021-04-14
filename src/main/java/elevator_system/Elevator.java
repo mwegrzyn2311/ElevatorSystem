@@ -126,4 +126,12 @@ public class Elevator {
         }
         System.out.println();
     }
+
+    public void reset() {
+        this.currentFloor = minFloor;
+        this.lastFloorInDir = minFloor;
+        this.dir = ElevatorDirection.IDLE;
+        this.peopleInside = new LinkedList<>();
+        Arrays.fill(floorButtons, false);
+    }
 }

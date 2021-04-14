@@ -8,7 +8,7 @@ Project is made using maven so it can be easily imported.
 
 It can also be run from the command line using prepared jar files like that:
 ```
-java -jar jars/Elevators-1.0.jar
+java -jar jars/Elevators-1.0.jar [elevators count] [min floor] [max floor]
 ```
 
 ### Algorithm
@@ -20,4 +20,12 @@ The algorithm used for the elevator system works like that:
 
 ### Simulation
 
-Currently simulation is based on hardcoded data but I'll try to add either a few data sets to choose from for the simulation or buttons for the user to manually call elevators and experiment (or both)
+<img src="./readme-images/elevatorsSim.PNG?raw=true" alt="Alt text" style="zoom:50%;" />
+
+1. Lobby - people inside are people who already called an elevator and are waiting for it to arrive; in the top-right corner floor number is displayed
+2. Elevator shaft - Elevators move only vertically and one vertical line contains one elevator
+3. Elevator - Elevator moving in the corresponding shaft.
+4. Elevator buttons - By clicking up or down buttons, a person is spawned so that it simulates a new person willing to use the elevator arriving
+5. Next step button - Clicking this button causes one simulation step to be performed
+6. Restart button - Restarts the simulation
+7. Info button - Displays info about current elevators state in the console.

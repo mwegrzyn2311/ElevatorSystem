@@ -54,7 +54,7 @@ public class ElevatorSystem {
         int metric;
         if(elevator.dir == ElevatorDirection.IDLE) {
             metric = Math.abs(elevator.currentFloor - floor);
-        } // I'm gonna assume that elevator needs at least one floor to slow down, so if one is on the same floor the person is but is moving, it will not be picked up primarily
+        }// I'm gonna assume that elevator needs at least one floor to slow down, so if one is on the same floor the person is but is moving, it will not be picked up primarily
         else if(elevator.dir == dir && (elevator.currentFloor - floor) * elevator.dir.dirVal() < 0 ) {
             // It could also calculate other floors that the elevator has to stop for and what not but I the code would look awful
             // I assume that elevator going in the same direction is better than the one that is IDLE

@@ -40,7 +40,7 @@ public class ButtonPanel extends JPanel {
             simManager.nextStep();
         });
         restartSimButton.addActionListener(a -> {
-            simManager.quickRestart();
+            simManager.hardRestart();
         });
         infoButton.addActionListener(a -> {
             simManager.printInfo();
